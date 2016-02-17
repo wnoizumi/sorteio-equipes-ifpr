@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TADS - Semana de Integração</title>
+
+		<meta charset="UTF-8"> 
+		<style type="text/css">
+			body {
+				text-align: center;
+			}
+			canvas {
+				border: 1px solid #009933;
+			}
+
+		</style>
+		 <script src="alunos.js"></script> 
+		<script type="text/javascript">
+			var listaAlunosAltura, gruposAltura, imagemAlturaLargura, textoAltura, textoLargura, posicaoGrupo1, posicaoGrupo2, posicaoGrupo3;
+			var posicaoAlunosGrupo1, posicaoAlunosGrupo2, posicaoAlunosGrupo3;
+			var alunos, grupo1, grupo2, grupo3,serie = 0, grupoAtual = 1;
+			var controleBolas, controleSorteio;
+			function inicializar()
+			{	
+				listaAlunosAltura = 360;
+				imagemAlturaLargura = 48;
+				textoAltura = 20;
+				textoLargura = 80;
+				gruposAltura = listaAlunosAltura + imagemAlturaLargura + textoAltura;
+				posicaoGrupo1 = 188;
+				posicaoGrupo2 = 564;
+				posicaoGrupo3 = 940;
+
+				grupo1 = [];
+				grupo2 = [];
+				grupo3 = [];
+				alunos = [];
+
+				canvas = document.getElementById("canvas");
+				context = canvas.getContext("2d");
+				context.textAlign="center";
+				desenharTela();
+			}
+
+			function sorteio() {
+				serie = 0;
+				grupoAtual = 1;
+				desenharTela();
+				buscarAlunos();
+				controleBolas = setInterval(desenharBolas, 150);
+				controleSorteio = setInterval(sortearProximo, 2000);
+			}
+
+			function desenharBolas() {
+				context.clearRect(0, 0, canvas.width, 240);
+				
+				for (var i = 0; i < 30; i++) {
+					context.beginPath();
+					context.fillStyle = 'rgb(0,153,51)';
+					context.arc(Math.random() * 1128, Math.random() * 220, 10, 0, Math.PI * 2, true);
+					context.fill();
+				}
+
+				for (var i = 0; i < 20; i++) {
+					context.beginPath();
+					context.fillStyle = 'rgb(179,0,0)';
+					context.arc(Math.random() * 1128, Math.random() * 220, 10, 0, Math.PI * 2, true);
+					context.fill();
+				}
+			}
+
+			function sortearProximo() {			
+				if (serie > 2) {
+					clearInterval(controleSorteio);
+					clearInterval(controleBolas);
+					desenharNomeGrupo("Fim do Sorteio!", "");
+					gravarExibirGrupos();
+					return;
+				}
+
+				var nome = "";
+				var a = alunos[serie];
+				var i = getRandomInt(0, a.length-1);
+				nome = a[i];
+				a.splice(i, 1);
+				if (a.length == 0) {
+					serie++;
+				}
+
+				if (grupoAtual == 1) {
+					grupo1.push(nome);
+				}
+
+				if (grupoAtual == 2) {
+					grupo2.push(nome);
+				}
+
+				if (grupoAtual == 3) {
+					grupo3.push(nome);
+				}
+	
+				desenharNomeGrupo(nome, "Equipe " + grupoAtual);
+				desenharGrupos();
+				grupoAtual = grupoAtual < 3 ? grupoAtual+1 : 1;
+			}
+
+			function desenharGrupos() {
+				context.clearRect(0, canvas.height - listaAlunosAltura-4, canvas.width, canvas.height);
+				context.fillStyle = 'rgb(0,153,51)';
+				context.font = "14px serif";
+				atualizaListaGrupo(grupo1, posicaoGrupo1);
+				atualizaListaGrupo(grupo2, posicaoGrupo2);
+				atualizaListaGrupo(grupo3, posicaoGrupo3);
+			}
+			
+			function atualizaListaGrupo(arr, posicaoX) {				
+				var altura = 10;
+				for (var i = arr.length-1; i >= 0; i--) {	
+					context.fillText(arr[i], posicaoX, canvas.height - listaAlunosAltura + altura);
+					altura += 15;
+				}
+			}
+
+			function gravarExibirGrupos() {
+
+				var texto = "<!DOCTYPE html>";
+					texto += "<html>";
+					texto +="<head>";
+					texto +="<title>Semana de Integração - Grupos</title>";
+					texto +="<meta charset='UTF-8'>";
+					texto +="</head>";
+					texto +="<body>";
+				
+				texto += "<h2>Grupo 1</h2>";
+				for (var i = 0; i < grupo1.length; i ++) {
+					texto += "<br>";
+					texto += grupo1[i];
+				}
+				texto += "<br>";
+				texto += "<h2>Grupo 2</h2>";
+				for (var i = 0; i < grupo2.length; i ++) {
+					texto += "<br>";
+					texto += grupo2[i];
+				}
+
+				texto += "<br>";				
+				texto += "<h2>Grupo 3</h2>";
+				for (var i = 0; i < grupo3.length; i ++) {
+					texto += "<br>";
+					texto += grupo3[i];
+				}
+
+				texto +="</body>";
+
+				download(texto, "grupos.html", "text/plain");
+			}
+
+			function desenharNomeGrupo(nome, grupo) {
+				context.clearRect(0, 240, canvas.width, 120);
+				context.fillStyle = 'rgb(0,153,51)';
+				context.font = "48px serif";						
+				context.fillText(nome, 564, 300);
+				context.font = "40px serif";
+				context.fillText(grupo, 564, 340);	
+			}
+
+			function desenharTela() {
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				context.fillStyle = 'rgb(0,0,0)';
+				context.font = "14px serif";
+				context.fillText("Equipe 1", posicaoGrupo1, canvas.height - textoAltura - listaAlunosAltura + 10);
+				context.fillText("Equipe 2", posicaoGrupo2, canvas.height - textoAltura - listaAlunosAltura + 10);
+				context.fillText("Equipe 3", posicaoGrupo3, canvas.height - textoAltura - listaAlunosAltura + 10);
+
+				var imgVermelho = new Image();
+				imgVermelho.src = "imagens/grupo_vermelho.png";
+				imgVermelho.onload = function() {
+					context.drawImage(imgVermelho, posicaoGrupo1-20, canvas.height - gruposAltura);
+				}
+
+				var imgVerde = new Image();
+				imgVerde.src = "imagens/grupo_verde.png";
+				imgVerde.onload = function() {
+					context.drawImage(imgVerde, posicaoGrupo2-20, canvas.height - gruposAltura);
+				}
+
+				var imgPreto = new Image();
+				imgPreto.src = "imagens/grupo_preto.png";
+				imgPreto.onload = function() {
+					context.drawImage(imgPreto, posicaoGrupo3-20, canvas.height - gruposAltura);
+				}
+			}
+
+			function getRandomInt(min, max) {
+				return Math.floor(Math.random() * (max - min + 1)) + min;
+			}
+
+			function download(text, name, type) {
+				var a = document.createElement("a");
+				var file = new Blob([text], {type: type});
+				a.href = URL.createObjectURL(file);
+				a.download = name;
+				a.click();
+			}
+		</script>
+    </head>   
+    <body onload="inicializar()">
+		<div id="logo">			
+			<figure >
+				<img src="imagens/ifpr_logo.png">
+			</figure>
+		</div>		
+		<div class="conteudo">
+		    <canvas id="canvas" width="1128" height="800">
+		        Navegador não suporta HTML5
+		    </canvas>
+		<br/>
+		<button onclick="sorteio()">Iniciar Sorteio</button>
+		</div>
+
+    </body>
+</html>
